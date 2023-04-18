@@ -21,42 +21,40 @@ module "secretmanager" {
   user_password      = "lsls"
 }
 
-module "lambda" {
-  source        = "../modules/lambda"
-  source_dir    = "${path.cwd}/functions/servicenow/lambda_function"
-  output_path   = "${path.cwd}/functions/servicenow/lambda_function.zip"
-  function_name = "servicenow_function"
-  role_name     = "ServiceNowRole"
-  handler       = "lambda_function.lambda_handler"
-  runtime       = "python3.9"
-  sqs_arn       = module.sqs.sqs_arn
-  sns_arn       = module.sns.sns_arn
-
-  environment_variables = {
-    TABLE_NAME = var.table_name
-  }
-}
-
-module "lambda2" {
+module "lambda_wiz" {
   source        = "../modules/lambda"
   source_dir    = "${path.cwd}/functions/wiz/lambda_function"
   output_path   = "${path.cwd}/functions/wiz/lambda_function.zip"
   function_name = "wiz_function"
+  role_name     = "WizRole"
+  handler       = "lambda_function.lambda_handler"
+  runtime       = "python3.9"
+  sqs_arn       = module.sqs.sqs_arn
+  sns_arn       = module.sns.sns_arn
+  environment_variables = {
+    TABLE_NAME = var.table_name
+  }
+}
+
+module "lambda_servicenow" {
+  source        = "../modules/lambda"
+  source_dir    = "${path.cwd}/functions/servicenow/lambda_function"
+  output_path   = "${path.cwd}/functions/servicenow/lambda_function.zip"
+  function_name = "servicenow_function"
   handler       = "lambda_function.lambda_handler"
   runtime       = "python3.9"
   create_role   = false
   create_policy = false
-  role_arn      = module.lambda.lambda_role
+  role_arn      = module.lambda_wiz.lambda_role
   sqs_arn       = module.sqs.sqs_arn
   environment_variables = {
-    TABLE_NAME = var.table_name
+    DYNAMODB_TABLE_NAME = var.table_name
+    SERVICENOW_TABLE_NAME = "wiz" 
+    INSTANCE = "ec2"
+    USERNAME = "user"
+    PASSWORD = "lsls"
+    CLIENT_SECRET = "lslss"
   }
-
-
 }
-
-# variable "table_name" {
-#   default = "wiz"
-# }
 
 

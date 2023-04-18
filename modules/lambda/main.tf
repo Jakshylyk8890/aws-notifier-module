@@ -17,6 +17,7 @@ resource "aws_iam_role" "lambda_role" {
   assume_role_policy = data.aws_iam_policy_document.assume_role_policy[0].json
 }
 resource "aws_lambda_event_source_mapping" "lamda_mapping" {
+  count = var.create_policy ? 1 : 0
   event_source_arn = var.sqs_arn
   function_name    = aws_lambda_function.lambda_function.arn
 }
